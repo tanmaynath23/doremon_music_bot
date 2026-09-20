@@ -1,3 +1,6 @@
 pyrogram==2.0.106
 tgcrypto
+pysocks==1.7.1
 yt-dlp
+pyaes==1.6.1
+flask
