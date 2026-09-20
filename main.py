@@ -11,14 +11,13 @@ call = PyTgCalls(app)
 
 @app.on_message()
 async def start(client, message):
-    await message.reply("Bot Live Hai ✅")
+    await message.reply("Bot Live Hai ✅ - Naya wala chal gaya")
 
 async def main():
     await app.start()
     await call.start()
     print("Bot Started ✅")
     await idle()
-    await app.stop()
 
 import asyncio
-asyncio.get_event_loop().run_until_complete(main())
+asyncio.run(main())
