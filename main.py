@@ -1,6 +1,11 @@
+import os
+import pyrogram.errors
+# Patch for pytgcalls spelling mistake
+if not hasattr(pyrogram.errors, "GroupcallForbidden"):
+    pyrogram.errors.GroupcallForbidden = pyrogram.errors.GroupCallForbidden
+
 from pyrogram import Client
 from pytgcalls import PyTgCalls, idle
-import os
 
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
