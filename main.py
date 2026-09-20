@@ -1,6 +1,9 @@
+# --- PATCH START - Isse error khatam hoga ---
 import pyrogram.errors
-if not hasattr(pyrogram.errors, 'GroupcallForbidden'):
-    pyrogram.errors.GroupcallForbidden = Exception
+for name in ["GroupcallForbidden", "GroupCallForbidden", "GroupcallInvalid", "GroupCallInvalid", "GroupCallNotModified", "GroupcallNotModified"]:
+    if not hasattr(pyrogram.errors, name):
+        setattr(pyrogram.errors, name, type(name, (Exception,), {}))
+# --- PATCH END ---
 
 import os, asyncio, threading
 from flask import Flask
