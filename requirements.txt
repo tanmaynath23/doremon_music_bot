@@ -1,8 +1,8 @@
 pyrogram
 pytgcalls
 yt-dlp
-yt-dl
 tgcrypto
 requests
 aiohttp
 youtube-search-python
+pytube
