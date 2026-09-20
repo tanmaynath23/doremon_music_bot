@@ -1,18 +1,19 @@
-# FIX for Render - missing imports patch
 import pyrogram.raw.types
 import pyrogram.errors
 
-# Patch 1: InputGroupCallSlug
+# ye sab missing cheezo ko auto-create kar dega
+def _patch_missing(name, module):
+    if not hasattr(module, name):
+        setattr(module, name, type(name, (Exception,), {}))
+
+# Raw types patch
 if not hasattr(pyrogram.raw.types, 'InputGroupCallSlug'):
     pyrogram.raw.types.InputGroupCallSlug = type('InputGroupCallSlug', (), {})
 
-# Patch 2: GroupcallForbidden
-if not hasattr(pyrogram.errors, 'GroupcallForbidden'):
-    class GroupcallForbidden(Exception):
-        pass
-    pyrogram.errors.GroupcallForbidden = GroupcallForbidden
+# Errors patch - saare Groupcall wale
+for err_name in ['GroupcallInvalid', 'GroupcallForbidden', 'GroupcallNotModified', 'GroupcallAlreadyJoined', 'GroupcallJoinMissing']:
+    _patch_missing(err_name, pyrogram.errors)
 
-# Ab asli import
 from pytgcalls import PyTgCalls
 from core.userbot import user
 
