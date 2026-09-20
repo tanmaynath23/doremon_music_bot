@@ -1,9 +1,10 @@
+--pre
 pyrogram==2.0.106
 tgcrypto
 flask
 yt-dlp
 youtube-search-python
-ntgcalls
-pytgcalls==5.0.0
 pyaes==1.6.1
 pysocks==1.7.1
+ntgcalls
+pytgcalls
