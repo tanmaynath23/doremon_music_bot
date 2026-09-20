@@ -1,53 +1,52 @@
 import os, asyncio, threading
 from flask import Flask
 from pyrogram import Client, filters, idle
-from pyrogram.types import Message
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
+from pytgcalls.types.input_stream import AudioPiped
 import yt_dlp
 
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-STRING_SESSION = os.getenv("STRING_SESSION")
+STRING = os.getenv("STRING_SESSION")
 
-app = Client("MusicBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-user = Client("UserBot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_SESSION)
+bot = Client("bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+user = Client("user", api_id=API_ID, api_hash=API_HASH, session_string=STRING)
 call = PyTgCalls(user)
 
 flask_app = Flask(__name__)
 @flask_app.route('/')
 def home(): return "Bot is Running!"
-def run_flask():
-    flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
 
-@app.on_message(filters.command("play") & filters.group)
-async def play(_, msg: Message):
-    if len(msg.command) < 2:
-        return await msg.reply("Gaane ka naam likho! /play kesariya")
-    query = " ".join(msg.command[1:])
-    m = await msg.reply(f"🔍 Searching `{query}`...")
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=int(os.getenv("PORT", 10000)))
+
+@bot.on_message(filters.command("play") & filters.group)
+async def play_func(_, m):
+    if len(m.command) < 2:
+        return await m.reply("Gaane ka naam likho: /play kesariya")
+    q = " ".join(m.command[1:])
+    s = await m.reply(f"🔍 Searching `{q}`...")
     try:
-        ydl_opts = {"format": "bestaudio", "quiet": True, "no_warnings": True, "geo_bypass": True, "nocheckcertificate": True, "default_search": "ytsearch1"}
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(query, download=False)
-            if 'entries' in info:
-                info = info['entries'][0]
-            audio_url = info['url']
-            title = info.get('title', query)
-        await call.play(msg.chat.id, MediaStream(audio_url))
-        await m.edit(f"▶️ **Playing:** {title}")
+        opts = {"format": "bestaudio", "quiet": True, "no_warnings": True, "nocheckcertificate": True, "geo_bypass": True}
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(f"ytsearch1:{q}", download=False)['entries'][0]
+            link = info['url']
+            title = info['title']
+
+        await call.play(m.chat.id, AudioPiped(link))
+        await s.edit(f"▶️ Playing: **{title}**")
     except Exception as e:
-        await m.edit(f"Error: {e}")
+        await s.edit(f"Error: {e}")
 
 async def main():
-    threading.Thread(target=run_flask).start()
-    await app.start()
+    threading.Thread(target=run_flask, daemon=True).start()
+    await bot.start()
     await user.start()
     await call.start()
     print("Music Bot Started!")
     await idle()
-    await app.stop()
+    await bot.stop()
     await user.stop()
 
 if __name__ == "__main__":
