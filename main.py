@@ -1,57 +1,56 @@
+import os, asyncio, threading, re
 from flask import Flask
-from threading import Thread
-import os, asyncio
-from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
+from pyrogram import Client, filters, idle
+from pyrogram.types import Message
+from pytgcalls import PyTgCalls, filters as TgFilters
 from pytgcalls.types import MediaStream
-from youtubesearchpython import VideosSearch
-
-app_flask = Flask(__name__)
-@app_flask.route('/')
-def home(): return "Music Bot Live Hai"
-def run_flask():
-    app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
-Thread(target=run_flask).start()
+from youtube_search import YoutubeSearch
+import yt_dlp
 
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 STRING_SESSION = os.getenv("STRING_SESSION")
 
-bot = Client("bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-user = Client("user", api_id=API_ID, api_hash=API_HASH, session_string=STRING_SESSION)
+app = Client("MusicBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+user = Client("UserBot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_SESSION)
 call = PyTgCalls(user)
 
-@bot.on_message(filters.command("start"))
-async def start(_, m):
-    await m.reply_text("Bot Live Hai ✅")
+flask_app = Flask(__name__)
+@flask_app.route('/')
+def home(): return "Bot is Running!"
 
-@bot.on_message(filters.command("play") & filters.group)
-async def play(_, m):
-    if len(m.command) < 2:
-        return await m.reply("Naam likho - /play kesariya")
-    query = m.text.split(None, 1)[1]
-    msg = await m.reply(f"🔍 Searching `{query}`...")
-    res = VideosSearch(query, limit=1).result()
-    if not res["result"]: return await msg.edit("Nahi mila!")
-    link = res["result"][0]["link"]
-    title = res["result"][0]["title"]
-    await msg.edit(f"▶️ Playing **{title}**")
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
+
+@app.on_message(filters.command("play") & filters.group)
+async def play(_, msg: Message):
+    if len(msg.command) < 2:
+        return await msg.reply("Gaane ka naam likho! Ex: /play kesariya")
+    query = " ".join(msg.command[1:])
+    m = await msg.reply(f"🔍 Searching `{query}`...")
     try:
-        await call.play(m.chat.id, MediaStream(link))
+        results = YoutubeSearch(query, max_results=1).to_dict()
+        url = f"https://youtube.com{results[0]['url_suffix']}"
+        ydl_opts = {"format": "bestaudio", "quiet": True, "no_warnings": True, "geo_bypass": True, "nocheckcertificate": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            audio_url = info['url']
+            title = info.get('title', query)
+        await call.play(msg.chat.id, MediaStream(audio_url))
+        await m.edit(f"▶️ **Playing:** {title}")
     except Exception as e:
-        await msg.edit(f"Error: {e}")
-
-@bot.on_message(filters.command(["stop"]))
-async def stop(_, m):
-    await call.leave_call(m.chat.id)
-    await m.reply("⏹️ Stopped!")
+        await m.edit(f"Error: {e}")
 
 async def main():
+    threading.Thread(target=run_flask).start()
+    await app.start()
     await user.start()
-    await bot.start()
     await call.start()
     print("Music Bot Started!")
-    await asyncio.Event().wait()
+    await idle()
+    await app.stop()
+    await user.stop()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())
