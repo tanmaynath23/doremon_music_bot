@@ -1,34 +1,24 @@
-import yt_dlp
-from youtubesearchpython import VideosSearch
-from pyrogram import filters
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.input_stream.quality import HighQualityAudio
-from core.bot import app
+from pyrogram import Client, filters
 from core.call import pytg
+from pytgcalls.types import MediaStream
+import yt_dlp, os
 
-@app.on_message(filters.command("play") & filters.group)
-async def play_handler(client, message):
-    if len(message.command) < 2:
-        return await message.reply("Use: /play kesariya")
-    query = " ".join(message.command[1:])
-    msg = await message.reply(f"Searching: {query}")
+@Client.on_message(filters.command("play"))
+async def play_cmd(c, m):
+    if len(m.command) < 2:
+        return await m.reply("Gaana likho - /play kesariya")
+    query = m.text.split(None,1)[1]
+    msg = await m.reply(f"🔍 Searching: {query}")
     try:
-        search = VideosSearch(query, limit=1).result()
-        link = search["result"][0]["link"]
-        title = search["result"][0]["title"]
-        opts = {"format": "bestaudio", "quiet": True}
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(link, download=False)
-            audio_url = info["url"]
-        await pytg.play(message.chat.id, AudioPiped(audio_url, HighQualityAudio()))
-        await msg.edit(f"Playing: {title}")
+        ydl = yt_dlp.YoutubeDL({"format":"bestaudio","quiet":True})
+        info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
+        url = info['url']
+        await pytg.play(m.chat.id, MediaStream(url))
+        await msg.edit(f"🎧 Playing: {info['title']}\nWelcome to Doremon music Zoox 👋")
     except Exception as e:
         await msg.edit(f"Error: {e}")
 
-@app.on_message(filters.command(["stop","end"]) & filters.group)
-async def stop_handler(_, m):
-    try:
-        await pytg.leave_group_call(m.chat.id)
-        await m.reply("Stopped")
-    except:
-        await m.reply("Nothing playing")
+@Client.on_message(filters.command("stop"))
+async def stop_cmd(c, m):
+    await pytg.leave_call(m.chat.id)
+    await m.reply("⏹️ Stopped! Doremon music Zoox")
