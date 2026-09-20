@@ -1,10 +1,9 @@
-import os, asyncio, threading, re
+import os, asyncio, threading
 from flask import Flask
 from pyrogram import Client, filters, idle
 from pyrogram.types import Message
-from pytgcalls import PyTgCalls, filters as TgFilters
+from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream
-from youtube_search import YoutubeSearch
 import yt_dlp
 
 API_ID = int(os.getenv("API_ID"))
@@ -19,22 +18,21 @@ call = PyTgCalls(user)
 flask_app = Flask(__name__)
 @flask_app.route('/')
 def home(): return "Bot is Running!"
-
 def run_flask():
     flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
 
 @app.on_message(filters.command("play") & filters.group)
 async def play(_, msg: Message):
     if len(msg.command) < 2:
-        return await msg.reply("Gaane ka naam likho! Ex: /play kesariya")
+        return await msg.reply("Gaane ka naam likho! /play kesariya")
     query = " ".join(msg.command[1:])
     m = await msg.reply(f"🔍 Searching `{query}`...")
     try:
-        results = YoutubeSearch(query, max_results=1).to_dict()
-        url = f"https://youtube.com{results[0]['url_suffix']}"
-        ydl_opts = {"format": "bestaudio", "quiet": True, "no_warnings": True, "geo_bypass": True, "nocheckcertificate": True}
+        ydl_opts = {"format": "bestaudio", "quiet": True, "no_warnings": True, "geo_bypass": True, "nocheckcertificate": True, "default_search": "ytsearch1"}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(query, download=False)
+            if 'entries' in info:
+                info = info['entries'][0]
             audio_url = info['url']
             title = info.get('title', query)
         await call.play(msg.chat.id, MediaStream(audio_url))
