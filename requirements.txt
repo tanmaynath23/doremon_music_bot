@@ -1,8 +1,6 @@
 pyrogram==2.0.106
 tgcrypto
-flask
+py-tgcalls==4.0.0
 yt-dlp
-pyaes==1.6.1
-pysocks==1.7.1
-ntgcalls
-py-tgcalls
+youtube-search-python
+flask
