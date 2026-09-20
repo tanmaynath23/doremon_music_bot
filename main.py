@@ -1,8 +1,11 @@
 import os
 import pyrogram.errors
-# Patch for pytgcalls spelling mistake
+
+# Ye dummy error banata hai taaki pytgcalls crash na ho
 if not hasattr(pyrogram.errors, "GroupcallForbidden"):
-    pyrogram.errors.GroupcallForbidden = pyrogram.errors.GroupCallForbidden
+    pyrogram.errors.GroupcallForbidden = type("GroupcallForbidden", (Exception,), {})
+if not hasattr(pyrogram.errors, "GroupCallForbidden"):
+    pyrogram.errors.GroupCallForbidden = pyrogram.errors.GroupcallForbidden
 
 from pyrogram import Client
 from pytgcalls import PyTgCalls, idle
