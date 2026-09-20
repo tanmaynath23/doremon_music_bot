@@ -4,3 +4,6 @@ pysocks==1.7.1
 yt-dlp
 pyaes==1.6.1
 flask
+pytgcalls==5.1.0
+yt-dlp
+youtube-search-python
