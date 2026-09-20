@@ -1,25 +1,24 @@
-import os, threading
 from flask import Flask
-from core.bot import app
-from core.userbot import user
-from core.call import pytg
-import asyncio
-from pyrogram import idle
-
+import threading, os
 flask_app = Flask(__name__)
 @flask_app.route('/')
-def home(): return "Music Bot Pro Running!"
+def home(): return "Doremon Music Zoox is Live!"
+threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))).start()
 
-def run_flask():
-    flask_app.run(host='0.0.0.0', port=int(os.getenv("PORT", 10000)))
+import asyncio
+from core.bot import bot
+from core.userbot import user
+from core.call import pytg
+from pyrogram import idle
 
-async def start_all():
-    threading.Thread(target=run_flask, daemon=True).start()
-    await app.start()
+async def main():
+    await bot.start()
     await user.start()
     await pytg.start()
-    print("Music Bot Pro Started!")
+    print("Welcome to Doremon music Zoox 👋 - Bot Started!")
     await idle()
+    await bot.stop()
+    await user.stop()
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(start_all())
+    asyncio.get_event_loop().run_until_complete(main())
