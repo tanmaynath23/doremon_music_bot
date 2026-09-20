@@ -1,11 +1,10 @@
 import os
 import pyrogram.errors
 
-# Ye dummy error banata hai taaki pytgcalls crash na ho
-if not hasattr(pyrogram.errors, "GroupcallForbidden"):
-    pyrogram.errors.GroupcallForbidden = type("GroupcallForbidden", (Exception,), {})
-if not hasattr(pyrogram.errors, "GroupCallForbidden"):
-    pyrogram.errors.GroupCallForbidden = pyrogram.errors.GroupcallForbidden
+# Pytgcalls ke saare missing errors ko dummy bana do
+for name in ["GroupcallForbidden", "GroupCallForbidden", "GroupcallInvalid", "GroupCallInvalid", "GroupcallJoinMissing", "GroupCallJoinMissing", "GroupcallNotFound", "GroupCallNotFound", "GroupcallSdpInvalid"]:
+    if not hasattr(pyrogram.errors, name):
+        setattr(pyrogram.errors, name, type(name, (Exception,), {}))
 
 from pyrogram import Client
 from pytgcalls import PyTgCalls, idle
