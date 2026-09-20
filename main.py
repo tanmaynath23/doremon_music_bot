@@ -1,6 +1,5 @@
-import os
-from pyrogram import Client, filters
-from pytgcalls import PyTgCalls, idle
+from pytgcalls import TgCalls as PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types import MediaStream
 import yt_dlp
 
