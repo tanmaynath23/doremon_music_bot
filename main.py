@@ -1,3 +1,16 @@
+from flask import Flask
+from threading import Thread
+import os
+
+app_flask = Flask(__name__)
+@app_flask.route('/')
+def home():
+    return "Bot Live Hai"
+
+def run_flask():
+    app_flask.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+
+Thread(target=run_flask).start()
 from pyrogram import Client
 import os
 
