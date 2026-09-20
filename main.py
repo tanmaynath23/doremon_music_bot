@@ -1,3 +1,7 @@
+import pyrogram.errors
+if not hasattr(pyrogram.errors, 'GroupcallForbidden'):
+    pyrogram.errors.GroupcallForbidden = Exception
+
 import os, asyncio, threading
 from flask import Flask
 from pyrogram import Client, filters, idle
