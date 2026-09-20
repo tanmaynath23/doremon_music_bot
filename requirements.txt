@@ -2,5 +2,3 @@ pyrogram==2.0.106
 pytgcalls==3.0.0.dev24
 yt-dlp
 tgcrypto
-pyaes==1.6.1
-pysocks==1.7.1
